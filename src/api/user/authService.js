@@ -1,8 +1,8 @@
 const _ = require('lodash')
 const jwt = require('jsonwebtoken')
-const bcrypt = require('bcrypt')
+/* const bcrypt = require('bcrypt')*/
 const User = require('./user')
-const env = require('../../.env')
+const env = require('../../config/.env')
 const emailRegex = /\S+@\S+\.\S+/
 const passwordRegex = /((?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%]).{6,20})/
 const sendErrorsFromDB = (res, dbErrors) => {
@@ -50,9 +50,8 @@ const signup = (req, res, next) => {
             ]
         })
     }
-    const salt = bcrypt.genSaltSync()
-    const passwordHash = bcrypt.hashSync(password, salt)
-    if (!bcrypt.compareSync(confirmPassword, passwordHash)) {
+   
+    if (!(confirmPassword === password)) {
         return res.status(400).send({ errors: ['Senhas não conferem.'] })
     }
     User.findOne({ email }, (err, user) => {
@@ -61,7 +60,7 @@ const signup = (req, res, next) => {
         } else if (user) {
             return res.status(400).send({ errors: ['Usuário já cadastrado.'] })
         } else {
-            const newUser = new User({ name, email, password: passwordHash })
+            const newUser = new User({ name, email, password })
             newUser.save(err => {
                 if (err) {
                     return sendErrorsFromDB(res, err)
